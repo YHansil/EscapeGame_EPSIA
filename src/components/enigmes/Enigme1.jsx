@@ -39,7 +39,7 @@ export default function Enigme1({ onComplete }) {
       setMessage("❌ Mauvaise réponse, la détection d’ARC augmente de 5%...");
       setJournal((prev) => [
         ...prev,
-        "⚠️ Anomalie détectée... chaque erreur attire l’attention d’ARC.",
+        "⚠️ Anomalie détectée... chaque erreur attire l’attention d’ARC !",
       ]);
     }
   };
