@@ -1,0 +1,20 @@
+{
+  "enigme1": {
+    "titre": "ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA",
+    "objectif": "Reconstituer le symbole perdu.",
+    "solution": 73,
+    "indice": "Convertis-la en minutes et brise-la avec la Clef."
+  },
+  "enigme2": {
+    "titre": "ÉNIGME 2 — LA COURBE DES ANDES",
+    "objectif": "Additionne leurs règnes et divise par le nombre 2 révolutions.",
+    "solution": 61,
+    "indice": "Arrondis le résultat obtenu."
+  },
+  "enigme3": {
+    "titre": "ÉNIGME 3 — LE CODE DU GIVRE",
+    "objectif": "Déchiffrer la direction codée (César).",
+    "solution": "NORD",
+    "indice": "La moitié du cercle suffit."
+  }
+}

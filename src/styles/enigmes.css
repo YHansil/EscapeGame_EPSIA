@@ -1,0 +1,177 @@
+/* === Styles des énigmes === */
+.enigme-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  color: #0ff;
+  text-align: center;
+}
+
+.message {
+  color: #ff3333;
+  font-weight: bold;
+}
+
+/* === Styles du puzzle === */
+.puzzle-container {
+  display: grid;
+  border: 2px solid #0ff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.tile {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.tile:hover {
+  transform: scale(1.05);
+}
+
+.tile.selected {
+  border: 2px solid #ff0;
+  box-shadow: 0 0 10px #ff0;
+}
+
+/* === Journal de bord === */
+.journal {
+  width: 60%;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  border: 1px solid #0ff;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+/* === Énigme 2 — Portraits historiques === */
+.portrait-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.portrait-card {
+  position: relative;
+  width: 120px;
+  height: 160px;
+  overflow: hidden;
+  border: 1px solid #0ff;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.portrait-card:hover {
+  transform: scale(1.05);
+}
+
+.portrait-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.9);
+  transition: filter 0.3s ease;
+}
+
+.portrait-card:hover .portrait-image {
+  filter: blur(3px) brightness(0.5);
+}
+
+.portrait-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  color: #ff0;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.3s ease;
+}
+
+.portrait-card:hover .portrait-hover {
+  opacity: 1;
+}
+
+.portrait-nom {
+  text-align: center;
+  color: #0ff;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
+
+/* === Énigme 3 : Code du Givre === */
+.subtitle {
+  color: #ccc;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.mot-cesar {
+  color: #ff0;
+  font-weight: bold;
+  cursor: pointer;
+  border-bottom: 1px dashed #ff0;
+}
+
+.tooltip-flottant {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #0ff;
+  color: #0ff;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 100;
+}
+
+.message-anomalie {
+  text-align: center;
+  color: #ff5050;
+  font-weight: bold;
+  margin: 20px 0;
+  font-size: 1.2rem;
+}
+
+.lettre-rotative {
+  color: #ff0;
+  cursor: pointer;
+  border-bottom: 1px dashed #ff0;
+  padding: 0 2px;
+  transition: all 0.2s ease-in-out;
+}
+
+.lettre-rotative:hover {
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
+}
+
+.coord-erreur {
+  color: #ff0;
+  cursor: help;
+  border-bottom: 1px dashed #ff0;
+}

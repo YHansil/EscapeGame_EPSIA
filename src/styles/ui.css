@@ -1,0 +1,71 @@
+
+/* === Styles de la carte des missions === */
+.carte-mission-container {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.carte-image {
+  width: 800px;
+  border-radius: 8px;
+  display: block;
+  transition: transform 1s ease-in-out;
+}
+
+/* Effet zoom Kremlin */
+.carte-image.zoom {
+  transform: scale(1.8);
+  transform-origin: 25% 30%;
+}
+
+/* Zone interactive */
+.zone-mission {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Cercle rouge fondu */
+.zone-cercle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(255, 0, 0, 0.4);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  transition: all 0.3s ease-in-out;
+}
+
+.zone-cercle:hover {
+  background-color: rgba(255, 0, 0, 0.7);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 1);
+}
+
+/* Tooltip flottant */
+.zone-tooltip {
+  display: none;
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #0ff;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-align: left;
+  z-index: 10;
+}
+
+/* Affichage du tooltip */
+.zone-mission:hover .zone-tooltip {
+  display: block;
+}
+
+/* Zone désactivée */
+.zone-mission.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
