@@ -26,7 +26,7 @@ export default function CarteMission({ onMissionSelect }) {
       {/* Zone 1 : Kremlin */}
       <div
         className="zone-mission"
-        style={{ left: "209px", top: "137px" }}
+        style={{ left: "33%", top: "33%" }}
         onClick={() => handleClick("kremlin")}
       >
         <div className="zone-cercle"></div>
@@ -59,7 +59,7 @@ export default function CarteMission({ onMissionSelect }) {
       {/* Zone 2 : Taj Mahal (inactive pour cette version) */}
       <div
         className="zone-mission disabled"
-        style={{ left: "395px", top: "280px" }}
+        style={{ left: "53%", top: "70%" }}
       >
         <div className="zone-cercle"></div>
         <div className="zone-tooltip">
