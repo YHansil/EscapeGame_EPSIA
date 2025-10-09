@@ -9,13 +9,15 @@ export default function Enigme3({ onComplete }) {
   const [message, setMessage] = useState("");
   const [showTooltipCesar, setShowTooltipCesar] = useState(false);
   const [showTooltipCoords, setShowTooltipCoords] = useState(false);
-  const [letters, setLetters] = useState(["A", "B", "E", "Q"]); // lettres interactives
+
+  // 🧩 Ces lettres vont tourner quand on clique dessus
+  const [letters, setLetters] = useState(["A", "B", "E", "Q"]);
   const [valeur, setValeur] = useState("");
 
   // --- Étape 1 : Lecture de l’audio + sous-titres ---
   useEffect(() => {
     const audio = new Audio("/audio/audio_enigme3/audio_enigme3.mp3");
-    audio.play();
+    audio.play().catch((e) => console.warn("Audio bloqué :", e));
 
     setJournal([
       "🎧 Audio détecté : Décryptage du flux ARC...",
@@ -23,11 +25,11 @@ export default function Enigme3({ onComplete }) {
       "“Tu joues avec mon passé… mais tu ignores ma langue.”",
       "“César n’était pas seulement un empereur.”",
       "“Il a laissé un héritage que même les machines utilisent encore.”",
-      "ℹ️ Le mot *César* semble caché une indication.",
+      "ℹ️ Le mot *César* semble cacher une indication.",
     ]);
   }, []);
 
-  // --- Fonction pour tourner une lettre (mollette A-Z) ---
+  // --- ✅ Fonction pour tourner une lettre (mollette A-Z) ---
   const rotateLetter = (index) => {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const current = letters[index];
@@ -36,7 +38,7 @@ export default function Enigme3({ onComplete }) {
     newLetters[index] = alphabet[nextIndex];
     setLetters(newLetters);
 
-    // Si le mot NORD est formé
+    // Vérifie si le mot formé est "NORD"
     if (newLetters.join("") === "NORD") {
       setMessage("✅ Mot trouvé : NORD");
       setStep(3);
@@ -121,24 +123,36 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* Message central : Anomalie */}
+      {/* ✅ Message central : lettres rotatives liées au state */}
       {step >= 1 && (
         <div className="message-anomalie">
           <strong>
-            <span className="lettre-rotative" onClick={() => rotateLetter(0)}>
-              A
+            <span
+              className="lettre-rotative"
+              onClick={() => rotateLetter(0)}
+            >
+              {letters[0]}
             </span>
             nomalie de{" "}
-            <span className="lettre-rotative" onClick={() => rotateLetter(1)}>
-              B
+            <span
+              className="lettre-rotative"
+              onClick={() => rotateLetter(1)}
+            >
+              {letters[1]}
             </span>
             alise{" "}
-            <span className="lettre-rotative" onClick={() => rotateLetter(2)}>
-              E
+            <span
+              className="lettre-rotative"
+              onClick={() => rotateLetter(2)}
+            >
+              {letters[2]}
             </span>
             ncrypted{" "}
-            <span className="lettre-rotative" onClick={() => rotateLetter(3)}>
-              Q
+            <span
+              className="lettre-rotative"
+              onClick={() => rotateLetter(3)}
+            >
+              {letters[3]}
             </span>
             uadrant
           </strong>

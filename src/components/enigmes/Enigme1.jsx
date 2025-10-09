@@ -1,5 +1,4 @@
-// src/components/enigmes/Enigme1.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PuzzleImage from "../PuzzleImage";
 
 export default function Enigme1({ onComplete }) {
@@ -7,34 +6,61 @@ export default function Enigme1({ onComplete }) {
   const [valeur, setValeur] = useState("");
   const [message, setMessage] = useState("");
   const [journal, setJournal] = useState([
-    "ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA",
+    "🧩 ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA",
     "(Kremlin, Moscou – Première clé de la latitude)",
   ]);
 
-  // Quand le puzzle est terminé
+  // ✅ Précharger le son dès le début
+  const [audio, setAudio] = useState(null);
+
+  useEffect(() => {
+    const sound = new Audio("/audio/audio_enigme1/audio_puzzle_resolu.mp3");
+    sound.volume = 1;
+    setAudio(sound);
+  }, []);
+
+  // ✅ Quand le puzzle est résolu
   const handlePuzzleResolved = () => {
     if (!isPuzzleDone) {
       setPuzzleDone(true);
-      const audio = new Audio("..../public/audio/audio_enigme1/audio_puzzle_resolu.mp3");
-      audio.play();
+
+      // Chrome bloque parfois la lecture automatique → on débloque par clic
+      const playAudio = () => {
+        if (audio) {
+          audio.play().catch((err) =>
+            console.warn("Lecture audio bloquée :", err)
+          );
+        }
+        window.removeEventListener("click", playAudio);
+      };
+      window.addEventListener("click", playAudio);
+
       setJournal((prev) => [
         ...prev,
-        'ARC: "La Tour du Temps détient la Clé du Pouvoir. Ma clé bat selon un cycle que tu ne comprendras jamais."',
-        "Journal : Convertis-la en minutes et brise-la avec La Clef. Notre agent de liaison a constaté que le cycle dure 10h57.",
+        '🎧 ARC : "La Tour du Temps détient la Clé du Pouvoir. Ma clé bat selon un cycle que tu ne comprendras jamais."',
+        "🗒️ Journal : Convertis-la en minutes et brise-la avec La Clef. Notre agent de liaison a constaté que le cycle dure 10h57.",
       ]);
     }
   };
 
+  // ✅ Vérifie la réponse
   const verifier = () => {
     if (parseInt(valeur) === 73) {
-      const successSound = new Audio("/audio/audio_post_mission/audio_metalique1.mp3");
-      successSound.play();
       setMessage("✅ Première partie de la latitude récupérée : 73° !");
       setJournal((prev) => [
         ...prev,
         "📡 Donnée confirmée. Alpha ROOT a débloqué le premier verrou du système ARC.",
       ]);
-      setTimeout(() => onComplete(), 2500);
+
+      // Lecture audio du succès
+      if (audio) {
+        audio.play().catch((err) =>
+          console.warn("Lecture audio bloquée :", err)
+        );
+      }
+
+      // Attendre un peu avant la transition vers Enigme 2
+      setTimeout(() => onComplete(), 3000);
     } else {
       setMessage("❌ Mauvaise réponse, la détection d’ARC augmente de 5%...");
       setJournal((prev) => [
@@ -46,20 +72,22 @@ export default function Enigme1({ onComplete }) {
 
   return (
     <div className="enigme-container">
-      <h2>ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA</h2>
+      <h2>🧩 ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA</h2>
       <p>
         {isPuzzleDone
           ? "Puzzle complété — observe la Tour Spasskaïa et poursuis ta mission."
           : "Reconstitue le puzzle pour révéler la Tour Spasskaïa."}
       </p>
 
-      {/* Puzzle reste toujours visible */}
-      <PuzzleImage
-        imageSrc="/image/image_enigme1/image_tour.png"
-        onResolve={handlePuzzleResolved}
-      />
+      {/* ✅ Puzzle interactif (4x4 ou autre selon ton composant) */}
+      {!isPuzzleDone && (
+        <PuzzleImage
+          imageSrc="/image/image_enigme1/image_tour.png"
+          onResolve={handlePuzzleResolved}
+        />
+      )}
 
-      {/* Une fois le puzzle fini, on affiche les sous-titres et champ de saisie */}
+      {/* ✅ Une fois le puzzle fini, journal + saisie de la réponse */}
       {isPuzzleDone && (
         <>
           <div className="journal">

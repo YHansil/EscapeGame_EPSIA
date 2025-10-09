@@ -175,3 +175,16 @@
   cursor: help;
   border-bottom: 1px dashed #ff0;
 }
+
+.lettre-rotative {
+  color: #ff0;
+  cursor: pointer;
+  border-bottom: 1px dashed #ff0;
+  padding: 0 2px;
+  transition: all 0.2s ease-in-out;
+}
+
+.lettre-rotative:hover {
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
+}

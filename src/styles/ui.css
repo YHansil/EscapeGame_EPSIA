@@ -69,3 +69,201 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* === Menu principal avec vidéo plein écran === */
+
+.menu-principal {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 🎥 Vidéo plein écran */
+.video-fond {
+  position: fixed; /* pour qu’elle reste derrière même si tu scroll */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover; /* remplit sans distorsion */
+  z-index: 0;
+}
+
+/* Superposition sombre (améliore le contraste du texte) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+}
+
+/* Contenu positionné par flex (haut et bas distincts) */
+.menu-contenu {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  padding: 60px 0;
+  color: #00ffff;
+  text-shadow: 0 0 15px #00ffff;
+  font-family: "Orbitron", sans-serif;
+}
+
+/* === Haut de page (titre + sous-titre) === */
+.titre-jeu {
+  font-size: 6rem;
+  letter-spacing: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0;
+  margin-top: 40px; /* espace du haut */
+}
+
+.sous-titre {
+  font-size: 1.5rem;
+  margin-top: 10px;
+  color: #0ff;
+  opacity: 0.9;
+}
+
+/* === Bas de page : boutons centrés === */
+.menu-boutons {
+  margin-bottom: 80px;
+  display: flex;
+  gap: 25px;
+}
+
+.menu-boutons button {
+  background: rgba(0, 255, 255, 0.15);
+  border: 2px solid #0ff;
+  color: #0ff;
+  padding: 14px 36px;
+  font-size: 1.3rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Orbitron", sans-serif;
+}
+
+.menu-boutons button:hover {
+  background: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 15px #0ff;
+  transform: scale(1.05);
+}
+
+/* Animation d'apparition douce */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* === Carte de mission plein écran === */
+.carte-mission {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+}
+
+/* Image de fond */
+.image-carte {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  user-select: none;
+  pointer-events: none; /* 🔥 rend l’image non cliquable */
+}
+
+/* === Zones interactives === */
+.zone-mission {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10; /* 🔥 au-dessus de l’image */
+}
+
+/* Halo rouge Kremlin */
+.halo-rouge {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.3);
+  border: 2px solid rgba(255, 0, 0, 0.7);
+  animation: pulse 1.8s infinite;
+}
+
+/* Halo jaune Taj Mahal */
+.halo-jaune {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 0, 0.25);
+  border: 2px solid rgba(255, 255, 0, 0.6);
+  animation: pulseJaune 2s infinite;
+}
+
+/* Pulsations */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+@keyframes pulseJaune {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.4); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+/* === Tooltip Kremlin === */
+.tooltip-carte {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid #0ff;
+  border-radius: 12px;
+  padding: 12px 15px;
+  color: #0ff;
+  font-size: 0.85rem;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+  z-index: 20;
+}
+
+/* === Tooltip Taj Mahal (style plus simple) === */
+.tooltip-taj {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 0, 0.1);
+  color: #ff0;
+  border: 1px solid #ff0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  text-align: center;
+  width: 200px;
+  box-shadow: 0 0 8px rgba(255, 255, 0, 0.4);
+}
