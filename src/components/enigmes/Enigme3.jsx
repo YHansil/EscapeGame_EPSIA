@@ -1,24 +1,28 @@
-// src/components/enigmes/Enigme3.jsx
+// Importation des fonctions React nécessaires
 import React, { useState, useEffect } from "react";
+// Importation du fichier CSS pour les styles associés à l’énigme
 import "../../styles/enigmes.css";
 
+// Déclaration du composant principal Enigme3
 export default function Enigme3({ onComplete }) {
-  // --- États principaux ---
-  const [step, setStep] = useState(1);
-  const [journal, setJournal] = useState([]);
-  const [message, setMessage] = useState("");
-  const [showTooltipCesar, setShowTooltipCesar] = useState(false);
-  const [showTooltipCoords, setShowTooltipCoords] = useState(false);
+  // --- 🧠 GESTION DES ÉTATS (React Hooks) ---
+  const [step, setStep] = useState(1); // contrôle la progression de l’énigme
+  const [journal, setJournal] = useState([]); // stocke les messages du journal
+  const [message, setMessage] = useState(""); // message affiché au joueur
+  const [showTooltipCesar, setShowTooltipCesar] = useState(false); // affiche le tooltip d’infos sur César
+  const [showTooltipCoords, setShowTooltipCoords] = useState(false); // affiche l’indice sur les coordonnées
+  const [letters, setLetters] = useState(["A", "B", "E", "Q"]); // lettres rotatives
+  const [valeur, setValeur] = useState(""); // valeur numérique ou texte saisie par le joueur
+  const [foundWord, setFoundWord] = useState(false); // ✅ devient true quand le mot NORD est trouvé
 
-  // 🧩 Ces lettres vont tourner quand on clique dessus
-  const [letters, setLetters] = useState(["A", "B", "E", "Q"]);
-  const [valeur, setValeur] = useState("");
-
-  // --- Étape 1 : Lecture de l’audio + sous-titres ---
+  // --- 🔊 Étape 1 : lecture audio et affichage des sous-titres ---
   useEffect(() => {
+    // Création d’un objet audio
     const audio = new Audio("/audio/audio_enigme3/audio_enigme3.mp3");
+    // Tentative de lecture du fichier audio
     audio.play().catch((e) => console.warn("Audio bloqué :", e));
 
+    // Initialisation du journal de bord avec les sous-titres
     setJournal([
       "🎧 Audio détecté : Décryptage du flux ARC...",
       "🗒️ Sous-titres :",
@@ -29,19 +33,20 @@ export default function Enigme3({ onComplete }) {
     ]);
   }, []);
 
-  // --- ✅ Fonction pour tourner une lettre (mollette A-Z) ---
+  // --- 🔁 Fonction pour faire tourner les lettres ---
   const rotateLetter = (index) => {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    const current = letters[index];
-    const nextIndex = (alphabet.indexOf(current) + 1) % alphabet.length;
-    const newLetters = [...letters];
-    newLetters[index] = alphabet[nextIndex];
-    setLetters(newLetters);
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); // alphabet sous forme de tableau
+    const current = letters[index]; // lettre actuelle
+    const nextIndex = (alphabet.indexOf(current) + 1) % alphabet.length; // calcule la suivante
+    const newLetters = [...letters]; // copie du tableau actuel
+    newLetters[index] = alphabet[nextIndex]; // remplace la lettre par la suivante
+    setLetters(newLetters); // met à jour l’état
 
-    // Vérifie si le mot formé est "NORD"
+    // ✅ Vérifie si les lettres forment le mot "NORD"
     if (newLetters.join("") === "NORD") {
-      setMessage("✅ Mot trouvé : NORD");
-      setStep(3);
+      setFoundWord(true); // déclenche l’animation centrale
+      setMessage("✅ Mot trouvé : NORD"); // message utilisateur
+      setStep(3); // passe à l’étape 3 (calcul racine)
       setJournal((prev) => [
         ...prev,
         "📡 Direction décodée : le Nord.",
@@ -50,12 +55,13 @@ export default function Enigme3({ onComplete }) {
     }
   };
 
-  // --- Étape 3 : Calcul racine ---
+  // --- 📐 Étape 3 : calcul de la racine ---
   const handleRacine = () => {
-    const num = parseFloat(valeur);
+    const num = parseFloat(valeur); // convertit en nombre
     if (num.toFixed(2) === "7.14") {
+      // ✅ bonne réponse
       setMessage("✅ Calcul exact : 7.14’’");
-      setStep(4);
+      setStep(4); // passe à l’étape suivante
       setJournal((prev) => [
         ...prev,
         "🧩 Bien joué, on a la latitude complète : 73°61’7.14’’N",
@@ -63,6 +69,7 @@ export default function Enigme3({ onComplete }) {
         "ℹ️ Un indice pourrait se cacher en passant la souris sur les coordonnées...",
       ]);
     } else {
+      // ❌ mauvaise réponse
       setMessage("❌ Mauvaise valeur. Vérifie ton calcul alphabétique.");
       setJournal((prev) => [
         ...prev,
@@ -71,10 +78,11 @@ export default function Enigme3({ onComplete }) {
     }
   };
 
-  // --- Étape 4 : Validation finale des coordonnées ---
+  // --- 📍 Étape 4 : correction finale des coordonnées ---
   const handleFinal = () => {
-    const cleaned = valeur.replace(/\s/g, "");
+    const cleaned = valeur.replace(/\s/g, ""); // nettoie la valeur
     if (cleaned === "74°01’7.14’’N") {
+      // ✅ bonne réponse finale
       setMessage("✅ Coordonnées corrigées validées !");
       setJournal((prev) => [
         ...prev,
@@ -82,17 +90,20 @@ export default function Enigme3({ onComplete }) {
         "🚀 Alpha ROOT a localisé ARC.",
         "🌍 Passage vers la zone 2 (Taj Mahal) débloqué.",
       ]);
+      // Attente avant la transition
       setTimeout(() => onComplete(), 5000);
     } else {
       setMessage("❌ Coordonnées incorrectes, vérifie le format exact.");
     }
   };
 
+  // --- 🖥️ Rendu visuel ---
   return (
     <div className="enigme-container">
+      {/* Titre principal */}
       <h2>🧩 ÉNIGME 3 — LE CODE DU GIVRE</h2>
 
-      {/* Sous-titres + Tooltip César */}
+      {/* Sous-titres + info sur le mot César */}
       {step === 1 && (
         <div className="subtitle">
           <p>
@@ -109,6 +120,7 @@ export default function Enigme3({ onComplete }) {
             “Il a laissé un héritage que même les machines utilisent encore.”
           </p>
 
+          {/* Tooltip flottant qui explique le code César */}
           {showTooltipCesar && (
             <div className="tooltip-flottant">
               <strong>🔐 Code César</strong>
@@ -123,35 +135,23 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* ✅ Message central : lettres rotatives liées au state */}
-      {step >= 1 && (
+      {/* ✅ Affichage du message avec lettres rotatives (disparaît une fois NORD trouvé) */}
+      {!foundWord && (
         <div className="message-anomalie">
           <strong>
-            <span
-              className="lettre-rotative"
-              onClick={() => rotateLetter(0)}
-            >
+            <span className="lettre-rotative" onClick={() => rotateLetter(0)}>
               {letters[0]}
             </span>
             nomalie de{" "}
-            <span
-              className="lettre-rotative"
-              onClick={() => rotateLetter(1)}
-            >
+            <span className="lettre-rotative" onClick={() => rotateLetter(1)}>
               {letters[1]}
             </span>
             alise{" "}
-            <span
-              className="lettre-rotative"
-              onClick={() => rotateLetter(2)}
-            >
+            <span className="lettre-rotative" onClick={() => rotateLetter(2)}>
               {letters[2]}
             </span>
             ncrypted{" "}
-            <span
-              className="lettre-rotative"
-              onClick={() => rotateLetter(3)}
-            >
+            <span className="lettre-rotative" onClick={() => rotateLetter(3)}>
               {letters[3]}
             </span>
             uadrant
@@ -159,14 +159,25 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* Journal de bord */}
+      {/* 🌟 Une fois NORD trouvé → animation centrale */}
+      {foundWord && (
+        <div className="mot-nord-center">
+          {letters.map((l, i) => (
+            <span key={i} className="lettre-nord">
+              {l}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 📓 Journal de bord dynamique */}
       <div className="journal">
         {journal.map((line, index) => (
           <p key={index}>{line}</p>
         ))}
       </div>
 
-      {/* Étape 3 : Calcul racine */}
+      {/* 🧮 Étape 3 : calcul racine */}
       {step === 3 && (
         <div className="racine-zone">
           <p>Entre la valeur trouvée après ton calcul :</p>
@@ -182,7 +193,7 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* Étape 4 : Correction des coordonnées */}
+      {/* 📍 Étape 4 : correction des coordonnées */}
       {step === 4 && (
         <div className="final-zone">
           <p>
@@ -197,6 +208,7 @@ export default function Enigme3({ onComplete }) {
             ne donnent pas de résultat. Corrige-les :
           </p>
 
+          {/* Tooltip des indices géographiques */}
           {showTooltipCoords && (
             <div className="tooltip-flottant">
               ℹ️ Conversion géographique :<br />
@@ -205,6 +217,7 @@ export default function Enigme3({ onComplete }) {
             </div>
           )}
 
+          {/* Champ de saisie finale */}
           <input
             type="text"
             value={valeur}
