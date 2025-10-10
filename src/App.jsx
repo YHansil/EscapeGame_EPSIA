@@ -1,17 +1,16 @@
-// Importations principales
 import React, { useState } from "react";
+import { JournalProvider } from "./context/JournalContext";
+import { TimerProvider } from "./context/TimerContext";
 import MenuPrincipal from "./components/MenuPrincipal";
 import CarteMission from "./components/CarteMission";
 import EcranEnigme from "./components/EcranEnigme";
-import JournalDeBord from "./components/JournalDeBord"; // ✅ Journal global
+import JournalDeBord from "./components/JournalDeBord";
 
 export default function App() {
-  // --- 🎮 ÉTATS DU JEU ---
-  const [etatJeu, setEtatJeu] = useState("menu"); // menu | carte | enigmes
-  const [mission, setMission] = useState(null);   // mission active
-  const [missionsTerminees, setMissionsTerminees] = useState([]); // ✅ liste des missions réussies
+  const [etatJeu, setEtatJeu] = useState("menu");
+  const [mission, setMission] = useState(null);
+  const [missionsTerminees, setMissionsTerminees] = useState([]);
 
-  // --- 🚀 FONCTIONS DE NAVIGATION ---
   const demarrerJeu = () => setEtatJeu("carte");
 
   const lancerMission = (zone) => {
@@ -19,28 +18,28 @@ export default function App() {
     setEtatJeu("enigmes");
   };
 
-  // ✅ Quand une mission est terminée (appelée par EcranEnigme)
   const terminerMission = (missionFinie) => {
     setMissionsTerminees((prev) => [...prev, missionFinie]);
-    setEtatJeu("carte"); // retourne à la carte
+    setEtatJeu("carte");
   };
 
-  // --- 🧩 AFFICHAGE GLOBAL ---
   return (
-    <div className="app-container">
-      {etatJeu === "menu" && <MenuPrincipal onJouer={demarrerJeu} />}
-      {etatJeu === "carte" && (
-        <CarteMission
-          onMissionSelect={lancerMission}
-          missionsTerminees={missionsTerminees} // ✅ passe la liste à la carte
-        />
-      )}
-      {etatJeu === "enigmes" && (
-        <EcranEnigme mission={mission} onMissionComplete={terminerMission} />
-      )}
-
-      {/* 🧾 Fenêtre globale du Journal toujours visible */}
-      <JournalDeBord />
-    </div>
+    <JournalProvider>
+      <TimerProvider>
+        <div className="app-container">
+          {etatJeu === "menu" && <MenuPrincipal onJouer={demarrerJeu} />}
+          {etatJeu === "carte" && (
+            <CarteMission
+              onMissionSelect={lancerMission}
+              missionsTerminees={missionsTerminees}
+            />
+          )}
+          {etatJeu === "enigmes" && (
+            <EcranEnigme mission={mission} onMissionComplete={terminerMission} />
+          )}
+          <JournalDeBord />
+        </div>
+      </TimerProvider>
+    </JournalProvider>
   );
 }

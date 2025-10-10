@@ -1,49 +1,42 @@
-// Importation de React et des hooks nécessaires
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { JournalContext } from "../../context/JournalContext";
+import { TimerContext } from "../../context/TimerContext";
 
 export default function Enigme2({ onComplete }) {
-  // --- 🎛️ ÉTATS GÉNÉRAUX ---
-  const [videoPlayed, setVideoPlayed] = useState(false); // indique si la vidéo d’intro est terminée
-  const [valeur, setValeur] = useState(""); // stocke la valeur saisie
-  const [message, setMessage] = useState(""); // message de validation
-  const [journal, setJournal] = useState([]); // texte du journal local
-  const [audio, setAudio] = useState(null); // Stocke le son narratif
-
-  // ✅ Import du contexte global du Journal
-  const { addMessage } = useContext(JournalContext);
-
-  // Référence vers la balise vidéo (pour contrôler lecture/plein écran)
+  const [videoPlayed, setVideoPlayed] = useState(false);
+  const [valeur, setValeur] = useState("");
+  const [message, setMessage] = useState("");
+  const [journal, setJournal] = useState([]);
+  const [audio, setAudio] = useState(null);
   const videoRef = useRef(null);
+  const { addMessage } = useContext(JournalContext);
+  const timerContext = useContext(TimerContext);
+  const { timeLeft, isGameOver, applyPenalty, formatTime } = timerContext || {
+    timeLeft: 20 * 60,
+    isGameOver: false,
+    applyPenalty: () => {},
+    formatTime: () => "20:00",
+  };
 
-  // --- 🔊 Prépare l’audio ---
   useEffect(() => {
     const audioElement = document.createElement("audio");
     audioElement.volume = 1;
 
-    // Ajouter la source MP3
     const mp3Source = document.createElement("source");
-    mp3Source.src = "/audio/audio_enigme2/audio_enigme_2.mp3"; // Chemin corrigé
+    mp3Source.src = "/audio/audio_enigme2/audio_enigme_2.mp3";
     mp3Source.type = "audio/mpeg";
 
-    // Optionnel : ajouter une source WAV comme secours
-    // const wavSource = document.createElement("source");
-    // wavSource.src = "/audio/audio_enigme2/audio_enigme_2.wav";
-    // wavSource.type = "audio/wav";
-
     audioElement.appendChild(mp3Source);
-    // audioElement.appendChild(wavSource);
-
     setAudio(audioElement);
 
-    // Nettoyage
     return () => {
-      audioElement.pause(); // Arrêter l'audio si le composant est démonté
-      audioElement.src = ""; // Libérer la ressource
+      if (!audioElement.paused) {
+        audioElement.pause();
+      }
+      audioElement.src = "";
     };
   }, []);
 
-  // --- LISTE DES PERSONNAGES ---
   const personnages = [
     { nom: "Pierre le Grand", img: "/image/image_enigme2/pierre_le_grand.png", regne: 43 },
     { nom: "Catherine II", img: "/image/image_enigme2/catherine_ii.png", regne: 34 },
@@ -52,36 +45,32 @@ export default function Enigme2({ onComplete }) {
     { nom: "Gorbatchev", img: "/image/image_enigme2/gorbatchev.png", regne: 6 },
   ];
 
-  // --- 🎬 Lancement de la vidéo en plein écran ---
   const handleStartVideo = () => {
+    if (isGameOver) return;
+
     const video = videoRef.current;
     if (video) {
       video.play().catch((err) => console.warn("Lecture vidéo bloquée :", err));
-
       if (video.requestFullscreen) video.requestFullscreen();
       else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
       else if (video.msRequestFullscreen) video.msRequestFullscreen();
     }
   };
 
-  // --- 🧩 Quand la vidéo se termine ---
   const handleVideoEnd = () => {
-    // Quitte le plein écran si actif
     if (document.fullscreenElement) {
       document.exitFullscreen();
     }
 
-    // Lecture de l’audio narratif
-    if (audio) {
+    if (audio && !isGameOver) {
       audio.play().catch((err) => console.warn("Lecture audio bloquée :", err));
     }
 
-    // Met aussi à jour le journal local (affichage dans la page)
     setJournal((prev) => [
       ...prev,
-      'ARC : ',
-      'Tu crois avoir réparé le Temps ?',
-      'Ce que tu as réactivé, c’est l’Histoire...',
+      "ARC : ",
+      "Tu crois avoir réparé le Temps ?",
+      "Ce que tu as réactivé, c’est l’Histoire...",
       "Journal : Observe les années de règne et effectue le calcul :",
       "Additionne les et divise par le nombre de 2 révolutions.",
     ]);
@@ -89,34 +78,42 @@ export default function Enigme2({ onComplete }) {
     setVideoPlayed(true);
   };
 
-  // --- 🧮 Vérifie la réponse du joueur ---
   const verifier = () => {
-    const num = parseFloat(valeur);
+    if (isGameOver) return;
 
+    const num = parseFloat(valeur);
     if (num === 61) {
       addMessage("📡 Donnée confirmée. Le fichier historique d’ARC est décrypté.");
       addMessage("✅ Deuxième partie de la latitude : 61’ — bien joué !");
-
       setJournal((prev) => [
         ...prev,
         "📡 Donnée confirmée. Le fichier historique d’ARC est décrypté.",
         "✅ Deuxième partie de la latitude : 61’",
       ]);
-
       setTimeout(() => onComplete(), 2500);
     } else if (num === 60.5) {
-      setJournal((prev) => [...prev, "💡 Indice : cette coordonée ne peut contenir qu'un nombre entier"]);
+      setJournal((prev) => [
+        ...prev,
+        "💡 Indice : cette coordonée ne peut contenir qu'un nombre entier",
+      ]);
+      applyPenalty();
     } else {
       setMessage("❌ Mauvaise réponse. ARC renforce sa vigilance...");
+      applyPenalty();
     }
   };
 
-  // --- 🖼️ AFFICHAGE DU COMPOSANT ---
   return (
     <div className="enigme-container">
       <h2>LA COURBE DES ANDES</h2>
+      <div className="timer-container">
+        {isGameOver ? (
+          <p className="timer-gameover">Temps écoulé ! La mission a échoué.</p>
+        ) : (
+          <p className="timer">Temps restant : {formatTime()}</p>
+        )}
+      </div>
 
-      {/* 🎥 Étape 1 : Lecture de la vidéo plein écran */}
       {!videoPlayed && (
         <div className="video-intro-container">
           <video
@@ -132,10 +129,8 @@ export default function Enigme2({ onComplete }) {
         </div>
       )}
 
-      {/* 🎮 Étape 2 : Contenu du jeu après la vidéo */}
       {videoPlayed && (
         <>
-          {/* Portraits historiques */}
           <div className="portrait-container">
             {personnages.map((perso, i) => (
               <div key={i} className="portrait-card">
@@ -148,14 +143,12 @@ export default function Enigme2({ onComplete }) {
             ))}
           </div>
 
-          {/* Journal local (optionnel) */}
           <div className="journal">
             {journal.map((line, index) => (
               <p key={index}>{line}</p>
             ))}
           </div>
 
-          {/* Zone de réponse */}
           <div className="reponse-zone">
             <p>Entre le résultat de ton calcul :</p>
             <input
@@ -163,8 +156,9 @@ export default function Enigme2({ onComplete }) {
               value={valeur}
               onChange={(e) => setValeur(e.target.value)}
               placeholder="Entre la valeur..."
+              disabled={isGameOver}
             />
-            <button onClick={verifier}>Valider</button>
+            <button onClick={verifier} disabled={isGameOver}>Valider</button>
             <p className="message">{message}</p>
           </div>
         </>

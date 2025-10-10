@@ -1,12 +1,9 @@
-// Importation des fonctions React nécessaires
 import React, { useState, useEffect, useContext } from "react";
-// Importation du fichier CSS pour les styles associés à l’énigme
 import "../../styles/enigmes.css";
 import { JournalContext } from "../../context/JournalContext";
+import { TimerContext } from "../../context/TimerContext";
 
-// Déclaration du composant principal Enigme3
 export default function Enigme3({ onComplete }) {
-  // --- 🧠 GESTION DES ÉTATS (React Hooks) ---
   const [step, setStep] = useState(1);
   const [journal, setJournal] = useState([]);
   const [message, setMessage] = useState("");
@@ -16,60 +13,54 @@ export default function Enigme3({ onComplete }) {
   const [letters, setLetters] = useState(["A", "B", "E", "Q"]);
   const [valeur, setValeur] = useState("");
   const [foundWord, setFoundWord] = useState(false);
-  const [audio, setAudio] = useState(null); // Stocke le son narratif
-  const [hasPlayed, setHasPlayed] = useState(false); // Suivi de la lecture de l'audio
+  const [audio, setAudio] = useState(null);
+  const [hasPlayed, setHasPlayed] = useState(false);
 
-  // ✅ Récupération du contexte global pour le journal
   const { addMessage } = useContext(JournalContext);
+  const timerContext = useContext(TimerContext);
+  const { timeLeft, isGameOver, applyPenalty, formatTime, stopTimer } = timerContext || {
+    timeLeft: 20 * 60,
+    isGameOver: false,
+    applyPenalty: () => {},
+    stopTimer: () => {},
+    formatTime: () => "20:00",
+  };
 
-  // --- 🔊 Prépare et joue l’audio automatiquement une seule fois ---
   useEffect(() => {
     const audioElement = document.createElement("audio");
     audioElement.volume = 1;
 
-    // Ajouter la source MP3
     const mp3Source = document.createElement("source");
-    mp3Source.src = "/audio/audio_enigme3/audio_enigme_3.mp3"; // Chemin correct
+    mp3Source.src = "/audio/audio_enigme3/audio_enigme_3.mp3";
     mp3Source.type = "audio/mpeg";
 
-    // Optionnel : ajouter une source WAV comme secours
-    // const wavSource = document.createElement("source");
-    // wavSource.src = "/audio/audio_enigme3/audio_enigme_3.wav";
-    // wavSource.type = "audio/wav";
-
     audioElement.appendChild(mp3Source);
-    // audioElement.appendChild(wavSource);
+    setAudio(audioElement);
 
-    // Attendre que l'audio soit prêt avant de jouer
     audioElement.addEventListener("canplaythrough", () => {
-      if (!hasPlayed) {
+      if (!hasPlayed && !isGameOver) {
         const playPromise = audioElement.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              setHasPlayed(true); // Marquer l'audio comme joué
+              setHasPlayed(true);
             })
             .catch((err) => {
               console.warn("Lecture audio automatique bloquée :", err);
-              // Note : Les navigateurs peuvent bloquer la lecture automatique sans interaction utilisateur
             });
         }
       }
     });
 
-    setAudio(audioElement);
-
-    // Nettoyage
     return () => {
       audioElement.removeEventListener("canplaythrough", () => {});
-      if (!audioElement.paused) {
-        audioElement.pause(); // Arrêter l'audio uniquement s'il est en cours
+      if (audioElement && !audioElement.paused) {
+        audioElement.pause();
       }
-      audioElement.src = ""; // Libérer la ressource
+      audioElement.src = "";
     };
-  }, [hasPlayed]);
+  }, [hasPlayed, isGameOver]);
 
-  // --- 📜 Initialisation du journal ---
   useEffect(() => {
     setJournal([
       <span key="1">ARC : </span>,
@@ -83,7 +74,6 @@ export default function Enigme3({ onComplete }) {
           César
         </span>{" "}
         n’était pas seulement un empereur.
-        {/* Tooltip pour César */}
         {showTooltipCesar && (
           <div className="tooltip-flottant">
             <strong>🔐 Code César</strong>
@@ -113,7 +103,6 @@ export default function Enigme3({ onComplete }) {
           chiffrement
         </span>{" "}
         numérique alphabétique.
-        {/* Tooltip pour Chiffrement */}
         {showTooltipChiffrement && (
           <div className="tooltip-flottant">
             <strong>🧮 Système de chiffrement</strong>
@@ -129,8 +118,9 @@ export default function Enigme3({ onComplete }) {
     ]);
   }, [showTooltipCesar, showTooltipChiffrement]);
 
-  // --- 🔁 Fonction pour faire tourner les lettres ---
   const rotateLetter = (index) => {
+    if (isGameOver) return;
+
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const current = letters[index];
     const nextIndex = (alphabet.indexOf(current) + 1) % alphabet.length;
@@ -138,7 +128,6 @@ export default function Enigme3({ onComplete }) {
     newLetters[index] = alphabet[nextIndex];
     setLetters(newLetters);
 
-    // ✅ Vérifie si les lettres forment "NORD"
     if (newLetters.join("") === "NORD") {
       setFoundWord(true);
       setStep(3);
@@ -150,8 +139,9 @@ export default function Enigme3({ onComplete }) {
     }
   };
 
-  // --- 📐 Étape 3 : calcul de la racine ---
   const handleRacine = () => {
+    if (isGameOver) return;
+
     const num = parseFloat(valeur);
     if (num.toFixed(2) === "7.14") {
       setMessage("✅ Calcul exact : 7.14’’");
@@ -164,11 +154,13 @@ export default function Enigme3({ onComplete }) {
       ]);
     } else {
       setMessage("❌ Mauvaise valeur. Vérifie ton calcul alphabétique.");
+      applyPenalty();
     }
   };
 
-  // --- 📍 Étape 4 : correction finale des coordonnées ---
   const handleFinal = () => {
+    if (isGameOver) return;
+
     const cleaned = valeur.replace(/\s/g, "");
     if (cleaned === "74°01’7.14’’N") {
       setMessage("✅ Coordonnées corrigées validées !");
@@ -178,18 +170,25 @@ export default function Enigme3({ onComplete }) {
         "🚀 Alpha ROOT a localisé ARC.",
         "🌍 Passage vers la zone 2 (Taj Mahal) débloqué.",
       ]);
+      stopTimer();
       setTimeout(() => onComplete(), 5000);
     } else {
       setMessage("❌ Coordonnées incorrectes, vérifie le format exact.");
+      applyPenalty();
     }
   };
 
-  // --- 🖥️ Rendu visuel ---
   return (
     <div className="enigme-container">
       <h2>LE CODE DU GIVRE</h2>
+      <div className="timer-container">
+        {isGameOver ? (
+          <p className="timer-gameover">Temps écoulé ! La mission a échoué.</p>
+        ) : (
+          <p className="timer">Temps restant : {formatTime()}</p>
+        )}
+      </div>
 
-      {/* ✅ Tooltip sur le mot "César" */}
       {showTooltipCesar && (
         <div className="tooltip-flottant">
           <strong>🔐 Code César</strong>
@@ -202,7 +201,6 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* ✅ Tooltip séparé pour "chiffrement numérique alphabétique" */}
       {showTooltipChiffrement && (
         <div className="tooltip-flottant">
           <strong>🔐 Chiffrement numérique alphabétique</strong>
@@ -211,7 +209,6 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* ✅ Message central avec lettres rotatives */}
       {!foundWord && (
         <div className="message-anomalie">
           <strong>
@@ -235,7 +232,6 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* 🌟 Animation du mot NORD une fois trouvé */}
       {foundWord && (
         <div className="mot-nord-center">
           {letters.map((l, i) => (
@@ -246,14 +242,12 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* 📓 Journal de bord (affiche les messages, avec mot César interactif) */}
       <div className="journal">
         {journal.map((line, index) => (
           <p key={index}>{line}</p>
         ))}
       </div>
 
-      {/* 🧮 Étape 3 : calcul racine */}
       {step === 3 && (
         <div className="racine-zone">
           <p>Entre la valeur trouvée après ton calcul :</p>
@@ -263,13 +257,13 @@ export default function Enigme3({ onComplete }) {
             value={valeur}
             onChange={(e) => setValeur(e.target.value)}
             placeholder="Entrez"
+            disabled={isGameOver}
           />
-          <button onClick={handleRacine}>Valider</button>
+          <button onClick={handleRacine} disabled={isGameOver}>Valider</button>
           <p className="message">{message}</p>
         </div>
       )}
 
-      {/* 📍 Étape 4 : correction des coordonnées */}
       {step === 4 && (
         <div className="final-zone">
           <p>
@@ -297,8 +291,9 @@ export default function Enigme3({ onComplete }) {
             value={valeur}
             onChange={(e) => setValeur(e.target.value)}
             placeholder="Ex: 74°01’7.14’’N"
+            disabled={isGameOver}
           />
-          <button onClick={handleFinal}>Valider</button>
+          <button onClick={handleFinal} disabled={isGameOver}>Valider</button>
           <p className="message">{message}</p>
         </div>
       )}
