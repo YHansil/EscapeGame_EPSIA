@@ -1,5 +1,5 @@
 // Importation de React et des hooks nécessaires
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { JournalContext } from "../../context/JournalContext";
 
 export default function Enigme2({ onComplete }) {
@@ -8,12 +8,40 @@ export default function Enigme2({ onComplete }) {
   const [valeur, setValeur] = useState(""); // stocke la valeur saisie
   const [message, setMessage] = useState(""); // message de validation
   const [journal, setJournal] = useState([]); // texte du journal local
+  const [audio, setAudio] = useState(null); // Stocke le son narratif
 
   // ✅ Import du contexte global du Journal
   const { addMessage } = useContext(JournalContext);
 
   // Référence vers la balise vidéo (pour contrôler lecture/plein écran)
   const videoRef = useRef(null);
+
+  // --- 🔊 Prépare l’audio ---
+  useEffect(() => {
+    const audioElement = document.createElement("audio");
+    audioElement.volume = 1;
+
+    // Ajouter la source MP3
+    const mp3Source = document.createElement("source");
+    mp3Source.src = "/audio/audio_enigme2/audio_enigme_2.mp3"; // Chemin corrigé
+    mp3Source.type = "audio/mpeg";
+
+    // Optionnel : ajouter une source WAV comme secours
+    // const wavSource = document.createElement("source");
+    // wavSource.src = "/audio/audio_enigme2/audio_enigme_2.wav";
+    // wavSource.type = "audio/wav";
+
+    audioElement.appendChild(mp3Source);
+    // audioElement.appendChild(wavSource);
+
+    setAudio(audioElement);
+
+    // Nettoyage
+    return () => {
+      audioElement.pause(); // Arrêter l'audio si le composant est démonté
+      audioElement.src = ""; // Libérer la ressource
+    };
+  }, []);
 
   // --- LISTE DES PERSONNAGES ---
   const personnages = [
@@ -44,8 +72,9 @@ export default function Enigme2({ onComplete }) {
     }
 
     // Lecture de l’audio narratif
-    const audio = new Audio("/audio/audio_enigme2/audio1.mp3");
-    audio.play().catch((err) => console.warn("Lecture audio bloquée :", err));
+    if (audio) {
+      audio.play().catch((err) => console.warn("Lecture audio bloquée :", err));
+    }
 
     // Met aussi à jour le journal local (affichage dans la page)
     setJournal((prev) => [

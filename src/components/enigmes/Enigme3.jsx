@@ -16,16 +16,61 @@ export default function Enigme3({ onComplete }) {
   const [letters, setLetters] = useState(["A", "B", "E", "Q"]);
   const [valeur, setValeur] = useState("");
   const [foundWord, setFoundWord] = useState(false);
+  const [audio, setAudio] = useState(null); // Stocke le son narratif
+  const [hasPlayed, setHasPlayed] = useState(false); // Suivi de la lecture de l'audio
 
   // ✅ Récupération du contexte global pour le journal
   const { addMessage } = useContext(JournalContext);
 
-  // --- 🔊 Étape 1 : lecture audio et ajout des messages au journal ---
+  // --- 🔊 Prépare et joue l’audio automatiquement une seule fois ---
   useEffect(() => {
-    const audio = new Audio("/audio/audio_enigme3/audio_enigme3.mp3");
-    audio.play().catch((e) => console.warn("Audio bloqué :", e));
+    const audioElement = document.createElement("audio");
+    audioElement.volume = 1;
 
-    // ✅ Texte initial avec deux mots interactifs
+    // Ajouter la source MP3
+    const mp3Source = document.createElement("source");
+    mp3Source.src = "/audio/audio_enigme3/audio_enigme_3.mp3"; // Chemin correct
+    mp3Source.type = "audio/mpeg";
+
+    // Optionnel : ajouter une source WAV comme secours
+    // const wavSource = document.createElement("source");
+    // wavSource.src = "/audio/audio_enigme3/audio_enigme_3.wav";
+    // wavSource.type = "audio/wav";
+
+    audioElement.appendChild(mp3Source);
+    // audioElement.appendChild(wavSource);
+
+    // Attendre que l'audio soit prêt avant de jouer
+    audioElement.addEventListener("canplaythrough", () => {
+      if (!hasPlayed) {
+        const playPromise = audioElement.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setHasPlayed(true); // Marquer l'audio comme joué
+            })
+            .catch((err) => {
+              console.warn("Lecture audio automatique bloquée :", err);
+              // Note : Les navigateurs peuvent bloquer la lecture automatique sans interaction utilisateur
+            });
+        }
+      }
+    });
+
+    setAudio(audioElement);
+
+    // Nettoyage
+    return () => {
+      audioElement.removeEventListener("canplaythrough", () => {});
+      if (!audioElement.paused) {
+        audioElement.pause(); // Arrêter l'audio uniquement s'il est en cours
+      }
+      audioElement.src = ""; // Libérer la ressource
+    };
+  }, [hasPlayed]);
+
+  // --- 📜 Initialisation du journal ---
+  useEffect(() => {
     setJournal([
       <span key="1">ARC : </span>,
       <span key="2">Tu joues avec mon passé… mais tu ignores ma langue.</span>,
@@ -82,7 +127,7 @@ export default function Enigme3({ onComplete }) {
         Que pourrait-il nous manquer pour trouver la longitude ?
       </span>,
     ]);
-  }, []);
+  }, [showTooltipCesar, showTooltipChiffrement]);
 
   // --- 🔁 Fonction pour faire tourner les lettres ---
   const rotateLetter = (index) => {

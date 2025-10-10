@@ -15,11 +15,37 @@ export default function Enigme1({ onComplete }) {
   const [audio, setAudio] = useState(null); // Stocke le son du succès
 
   // --- 🔊 Prépare l’audio ---
-  useEffect(() => {
-    const sound = new Audio("/audio/audio_enigme1/audio_puzzle_resolu.mp3");
-    sound.volume = 1;
-    setAudio(sound);
-  }, []);
+useEffect(() => {
+  const audioElement = document.createElement("audio");
+  audioElement.volume = 1;
+
+  // Ajouter plusieurs sources pour compatibilité
+  const mp3Source = document.createElement("source");
+  mp3Source.src = "/audio/audio_enigme1/audio_puzzle_resolu.mp3";
+  mp3Source.type = "audio/mpeg";
+
+  // Optionnel : ajouter une source WAV comme secours
+  // const wavSource = document.createElement("source");
+  // wavSource.src = "/audio/audio_enigme1/audio_puzzle_resolu.wav";
+  // wavSource.type = "audio/wav";
+
+  audioElement.appendChild(mp3Source);
+  // audioElement.appendChild(wavSource);
+
+  setAudio(audioElement);
+
+  // Jouer l'audio à la première interaction
+  const playAudio = () => {
+    audioElement
+      .play()
+      .catch((err) => console.warn("Lecture audio bloquée :", err));
+    window.removeEventListener("click", playAudio);
+  };
+  //window.addEventListener("click", playAudio);
+
+  // Nettoyage
+  return () => window.removeEventListener("click", playAudio);
+}, []);
 
   // --- 🧩 Quand le puzzle est résolu ---
   const handlePuzzleResolved = () => {
@@ -58,13 +84,6 @@ export default function Enigme1({ onComplete }) {
       //  ...prev,
       //  "📡 Donnée confirmée. Alpha ROOT a débloqué le premier verrou du système ARC.",
       //]);
-
-      // Lecture du son de réussite
-      if (audio) {
-        audio.play().catch((err) =>
-          console.warn("Lecture audio bloquée :", err)
-        );
-      }
 
       // Transition vers l’énigme suivante
       setTimeout(() => onComplete(), 3000);
