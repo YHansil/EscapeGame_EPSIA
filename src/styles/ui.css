@@ -3,7 +3,7 @@
 .carte-mission-container {
   position: relative;
   display: inline-block;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .carte-image {
@@ -50,7 +50,7 @@
   top: 40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 300px;
+  width: 350px;
   background: rgba(0, 0, 0, 0.8);
   color: #0ff;
   padding: 10px;
@@ -267,4 +267,48 @@
   text-align: center;
   width: 200px;
   box-shadow: 0 0 8px rgba(255, 255, 0, 0.4);
+}
+
+/* ✅ État visuel pour les missions terminées */
+.mission-terminee .zone-cercle {
+  border: 2px solid #00ff99;
+  box-shadow: 0 0 20px #00ff99;
+}
+
+/* ✅ Position corrigée pour s’afficher au-dessus du cercle */
+.mission-status {
+  position: absolute;
+  bottom: 120%; /* s'affiche juste au-dessus du point cliquable */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid #00ff88;
+  color: #00ffcc;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  text-shadow: 0 0 6px #00ff88;
+  backdrop-filter: blur(3px);
+  white-space: nowrap;
+  z-index: 200;
+  animation: fadeInStatus 0.8s ease;
+}
+
+/* 💡 Lueur verte sur le cercle terminé */
+.mission-terminee .zone-cercle {
+  border: 2px solid #00ff99;
+  box-shadow: 0 0 20px #00ff99, 0 0 40px rgba(0, 255, 100, 0.5);
+}
+
+
+@keyframes fadeInStatus {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }

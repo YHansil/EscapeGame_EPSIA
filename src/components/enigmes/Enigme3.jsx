@@ -1,88 +1,131 @@
 // Importation des fonctions React nécessaires
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 // Importation du fichier CSS pour les styles associés à l’énigme
 import "../../styles/enigmes.css";
+import { JournalContext } from "../../context/JournalContext";
 
 // Déclaration du composant principal Enigme3
 export default function Enigme3({ onComplete }) {
   // --- 🧠 GESTION DES ÉTATS (React Hooks) ---
-  const [step, setStep] = useState(1); // contrôle la progression de l’énigme
-  const [journal, setJournal] = useState([]); // stocke les messages du journal
-  const [message, setMessage] = useState(""); // message affiché au joueur
-  const [showTooltipCesar, setShowTooltipCesar] = useState(false); // affiche le tooltip d’infos sur César
-  const [showTooltipCoords, setShowTooltipCoords] = useState(false); // affiche l’indice sur les coordonnées
-  const [letters, setLetters] = useState(["A", "B", "E", "Q"]); // lettres rotatives
-  const [valeur, setValeur] = useState(""); // valeur numérique ou texte saisie par le joueur
-  const [foundWord, setFoundWord] = useState(false); // ✅ devient true quand le mot NORD est trouvé
+  const [step, setStep] = useState(1);
+  const [journal, setJournal] = useState([]);
+  const [message, setMessage] = useState("");
+  const [showTooltipCesar, setShowTooltipCesar] = useState(false);
+  const [showTooltipChiffrement, setShowTooltipChiffrement] = useState(false);
+  const [showTooltipCoords, setShowTooltipCoords] = useState(false);
+  const [letters, setLetters] = useState(["A", "B", "E", "Q"]);
+  const [valeur, setValeur] = useState("");
+  const [foundWord, setFoundWord] = useState(false);
 
-  // --- 🔊 Étape 1 : lecture audio et affichage des sous-titres ---
+  // ✅ Récupération du contexte global pour le journal
+  const { addMessage } = useContext(JournalContext);
+
+  // --- 🔊 Étape 1 : lecture audio et ajout des messages au journal ---
   useEffect(() => {
-    // Création d’un objet audio
     const audio = new Audio("/audio/audio_enigme3/audio_enigme3.mp3");
-    // Tentative de lecture du fichier audio
     audio.play().catch((e) => console.warn("Audio bloqué :", e));
 
-    // Initialisation du journal de bord avec les sous-titres
+    // ✅ Texte initial avec deux mots interactifs
     setJournal([
-      "🎧 Audio détecté : Décryptage du flux ARC...",
-      "🗒️ Sous-titres :",
-      "“Tu joues avec mon passé… mais tu ignores ma langue.”",
-      "“César n’était pas seulement un empereur.”",
-      "“Il a laissé un héritage que même les machines utilisent encore.”",
-      "ℹ️ Le mot *César* semble cacher une indication.",
+      <span key="1">ARC : </span>,
+      <span key="2">Tu joues avec mon passé… mais tu ignores ma langue.</span>,
+      <span key="3">
+        <span
+          className="mot-cesar"
+          onMouseEnter={() => setShowTooltipCesar(true)}
+          onMouseLeave={() => setShowTooltipCesar(false)}
+        >
+          César
+        </span>{" "}
+        n’était pas seulement un empereur.
+        {/* Tooltip pour César */}
+        {showTooltipCesar && (
+          <div className="tooltip-flottant">
+            <strong>🔐 Code César</strong>
+            <br />
+            Un chiffrement par décalage des lettres de l’alphabet.<br />
+            Exemple : A → D, B → E, C → F… (décalage de 3)
+          </div>
+        )}
+      </span>,
+      <span key="4">
+        Il a laissé un héritage que même les machines utilisent encore.
+      </span>,
+      <span key="5">
+        Un proverbe dit : Retourne une demie fois ta langue avant de l’ouvrir.
+      </span>,
+      <span key="6">
+        Journal : Nous n’avons trouvé aucune donnée relative à cette phrase, notre
+        équipe de cybersécurité y travaille...
+      </span>,
+      <span key="7">
+        Mais ARC a pris de l’avance, et a détruit tous nos systèmes de{" "}
+        <span
+          className="mot-chiffrement"
+          onMouseEnter={() => setShowTooltipChiffrement(true)}
+          onMouseLeave={() => setShowTooltipChiffrement(false)}
+        >
+          chiffrement
+        </span>{" "}
+        numérique alphabétique.
+        {/* Tooltip pour Chiffrement */}
+        {showTooltipChiffrement && (
+          <div className="tooltip-flottant">
+            <strong>🧮 Système de chiffrement</strong>
+            <br />
+            Utilise des conversions lettres/nombres (A=1, B=2, etc.)<br />
+            Un concept directement lié à l’héritage de César.
+          </div>
+        )}
+      </span>,
+      <span key="8">
+        Que pourrait-il nous manquer pour trouver la longitude ?
+      </span>,
     ]);
   }, []);
 
   // --- 🔁 Fonction pour faire tourner les lettres ---
   const rotateLetter = (index) => {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); // alphabet sous forme de tableau
-    const current = letters[index]; // lettre actuelle
-    const nextIndex = (alphabet.indexOf(current) + 1) % alphabet.length; // calcule la suivante
-    const newLetters = [...letters]; // copie du tableau actuel
-    newLetters[index] = alphabet[nextIndex]; // remplace la lettre par la suivante
-    setLetters(newLetters); // met à jour l’état
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    const current = letters[index];
+    const nextIndex = (alphabet.indexOf(current) + 1) % alphabet.length;
+    const newLetters = [...letters];
+    newLetters[index] = alphabet[nextIndex];
+    setLetters(newLetters);
 
-    // ✅ Vérifie si les lettres forment le mot "NORD"
+    // ✅ Vérifie si les lettres forment "NORD"
     if (newLetters.join("") === "NORD") {
-      setFoundWord(true); // déclenche l’animation centrale
-      setMessage("✅ Mot trouvé : NORD"); // message utilisateur
-      setStep(3); // passe à l’étape 3 (calcul racine)
+      setFoundWord(true);
+      setStep(3);
       setJournal((prev) => [
         ...prev,
         "📡 Direction décodée : le Nord.",
-        "🧮 Il reste les secondes. Somme les entre elles et extrais la racine.",
+        "Il reste les secondes, sommes les entre elles et extrais la racine.",
       ]);
     }
   };
 
   // --- 📐 Étape 3 : calcul de la racine ---
   const handleRacine = () => {
-    const num = parseFloat(valeur); // convertit en nombre
+    const num = parseFloat(valeur);
     if (num.toFixed(2) === "7.14") {
-      // ✅ bonne réponse
       setMessage("✅ Calcul exact : 7.14’’");
-      setStep(4); // passe à l’étape suivante
+      setStep(4);
       setJournal((prev) => [
         ...prev,
         "🧩 Bien joué, on a la latitude complète : 73°61’7.14’’N",
-        "❌ Les coordonnées 73°61’7.14’’N ne donnent pas de résultat...",
-        "ℹ️ Un indice pourrait se cacher en passant la souris sur les coordonnées...",
+        "❌ Les coordonnées obtenu donnent une latitude incorrecte...",
+        "Il faut corriger cela.",
       ]);
     } else {
-      // ❌ mauvaise réponse
       setMessage("❌ Mauvaise valeur. Vérifie ton calcul alphabétique.");
-      setJournal((prev) => [
-        ...prev,
-        "🧮 Indice : N=14, O=15, R=18, D=4 → somme=51 → √51 ≈ 7.14",
-      ]);
     }
   };
 
   // --- 📍 Étape 4 : correction finale des coordonnées ---
   const handleFinal = () => {
-    const cleaned = valeur.replace(/\s/g, ""); // nettoie la valeur
+    const cleaned = valeur.replace(/\s/g, "");
     if (cleaned === "74°01’7.14’’N") {
-      // ✅ bonne réponse finale
       setMessage("✅ Coordonnées corrigées validées !");
       setJournal((prev) => [
         ...prev,
@@ -90,7 +133,6 @@ export default function Enigme3({ onComplete }) {
         "🚀 Alpha ROOT a localisé ARC.",
         "🌍 Passage vers la zone 2 (Taj Mahal) débloqué.",
       ]);
-      // Attente avant la transition
       setTimeout(() => onComplete(), 5000);
     } else {
       setMessage("❌ Coordonnées incorrectes, vérifie le format exact.");
@@ -100,42 +142,31 @@ export default function Enigme3({ onComplete }) {
   // --- 🖥️ Rendu visuel ---
   return (
     <div className="enigme-container">
-      {/* Titre principal */}
-      <h2>🧩 ÉNIGME 3 — LE CODE DU GIVRE</h2>
+      <h2>LE CODE DU GIVRE</h2>
 
-      {/* Sous-titres + info sur le mot César */}
-      {step === 1 && (
-        <div className="subtitle">
-          <p>
-            “Tu joues avec mon passé… mais tu ignores ma langue.” <br />
-            “
-            <span
-              className="mot-cesar"
-              onMouseEnter={() => setShowTooltipCesar(true)}
-              onMouseLeave={() => setShowTooltipCesar(false)}
-            >
-              César
-            </span>{" "}
-            n’était pas seulement un empereur.” <br />
-            “Il a laissé un héritage que même les machines utilisent encore.”
-          </p>
-
-          {/* Tooltip flottant qui explique le code César */}
-          {showTooltipCesar && (
-            <div className="tooltip-flottant">
-              <strong>🔐 Code César</strong>
-              <br />
-              L’un des plus anciens systèmes de chiffrement.<br />
-              Inventé par Jules César pour protéger ses messages militaires, il repose sur un décalage des lettres dans l’alphabet.<br />
-              Exemple :<br />
-              avec un pas de 3 → A → D, B → E, C → F …<br />
-              Pour déchiffrer, il suffit d’inverser ce décalage.
-            </div>
-          )}
+      {/* ✅ Tooltip sur le mot "César" */}
+      {showTooltipCesar && (
+        <div className="tooltip-flottant">
+          <strong>🔐 Code César</strong>
+          <br />
+          L’un des plus anciens systèmes de chiffrement.<br />
+          Inventé par Jules César pour protéger ses messages militaires, il repose sur un décalage des lettres dans l’alphabet.<br />
+          Exemple :<br />
+          avec un pas de 3 → A → D, B → E, C → F …<br />
+          Pour déchiffrer, il suffit d’inverser ce décalage.
         </div>
       )}
 
-      {/* ✅ Affichage du message avec lettres rotatives (disparaît une fois NORD trouvé) */}
+      {/* ✅ Tooltip séparé pour "chiffrement numérique alphabétique" */}
+      {showTooltipChiffrement && (
+        <div className="tooltip-flottant">
+          <strong>🔐 Chiffrement numérique alphabétique</strong>
+          <br />
+          A1Z26
+        </div>
+      )}
+
+      {/* ✅ Message central avec lettres rotatives */}
       {!foundWord && (
         <div className="message-anomalie">
           <strong>
@@ -159,7 +190,7 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* 🌟 Une fois NORD trouvé → animation centrale */}
+      {/* 🌟 Animation du mot NORD une fois trouvé */}
       {foundWord && (
         <div className="mot-nord-center">
           {letters.map((l, i) => (
@@ -170,7 +201,7 @@ export default function Enigme3({ onComplete }) {
         </div>
       )}
 
-      {/* 📓 Journal de bord dynamique */}
+      {/* 📓 Journal de bord (affiche les messages, avec mot César interactif) */}
       <div className="journal">
         {journal.map((line, index) => (
           <p key={index}>{line}</p>
@@ -186,7 +217,7 @@ export default function Enigme3({ onComplete }) {
             step="0.01"
             value={valeur}
             onChange={(e) => setValeur(e.target.value)}
-            placeholder="Ex: 7.14"
+            placeholder="Entrez"
           />
           <button onClick={handleRacine}>Valider</button>
           <p className="message">{message}</p>
@@ -208,7 +239,6 @@ export default function Enigme3({ onComplete }) {
             ne donnent pas de résultat. Corrige-les :
           </p>
 
-          {/* Tooltip des indices géographiques */}
           {showTooltipCoords && (
             <div className="tooltip-flottant">
               ℹ️ Conversion géographique :<br />
@@ -217,7 +247,6 @@ export default function Enigme3({ onComplete }) {
             </div>
           )}
 
-          {/* Champ de saisie finale */}
           <input
             type="text"
             value={valeur}

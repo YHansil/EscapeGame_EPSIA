@@ -8,10 +8,13 @@ import "../styles/ui.css"; // pour les styles des cercles rouges
  * - Kremlin (209, 137)
  * - Taj Mahal (395, 280)
  */
-export default function CarteMission({ onMissionSelect }) {
+export default function CarteMission({ onMissionSelect, missionsTerminees = [] }) {
   // Fonction qui gère le clic sur une zone
   const handleClick = (mission) => {
-    onMissionSelect(mission);
+    // Empêche le clic si la mission est déjà terminée
+    if (!missionsTerminees.includes(mission)) {
+      onMissionSelect(mission);
+    }
   };
 
   return (
@@ -23,13 +26,27 @@ export default function CarteMission({ onMissionSelect }) {
         className="carte-image"
       />
 
-      {/* Zone 1 : Kremlin */}
+      {/* === Zone 1 : Kremlin === */}
       <div
-        className="zone-mission"
-        style={{ left: "33%", top: "33%" }}
+        className={`zone-mission ${
+          missionsTerminees.includes("kremlin") ? "mission-terminee" : ""
+        }`}
+        style={{
+          left: "33%",
+          top: "33%",
+          position: "absolute", // ✅ pour bien ancrer sur la carte
+        }}
         onClick={() => handleClick("kremlin")}
       >
         <div className="zone-cercle"></div>
+
+        {/* ✅ Badge “Mission réussie” bien positionné */}
+        {missionsTerminees.includes("kremlin") && (
+          <div className="mission-status" style={{ top: "-45px", left: "50%" }}>
+            ✔ Mission réussie
+          </div>
+        )}
+
         <div className="zone-tooltip">
           🧭 <strong>Mission : Opération Alpha Root</strong>
           <br />
@@ -56,10 +73,10 @@ export default function CarteMission({ onMissionSelect }) {
         </div>
       </div>
 
-      {/* Zone 2 : Taj Mahal (inactive pour cette version) */}
+      {/* === Zone 2 : Taj Mahal === */}
       <div
         className="zone-mission disabled"
-        style={{ left: "53%", top: "70%" }}
+        style={{ left: "50%", top: "65%", position: "absolute" }}
       >
         <div className="zone-cercle"></div>
         <div className="zone-tooltip">

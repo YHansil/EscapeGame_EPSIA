@@ -1,29 +1,21 @@
-// Importation des fonctions nécessaires depuis React
-import React, { useState, useRef } from "react";
+// Importation de React et des hooks nécessaires
+import React, { useState, useRef, useContext } from "react";
+import { JournalContext } from "../../context/JournalContext";
 
-// Définition du composant principal de l’énigme 2
 export default function Enigme2({ onComplete }) {
-  // --- 🎛️ États (useState) ---
+  // --- 🎛️ ÉTATS GÉNÉRAUX ---
+  const [videoPlayed, setVideoPlayed] = useState(false); // indique si la vidéo d’intro est terminée
+  const [valeur, setValeur] = useState(""); // stocke la valeur saisie
+  const [message, setMessage] = useState(""); // message de validation
+  const [journal, setJournal] = useState([]); // texte du journal local
 
-  // `isStarted` indique si le joueur a lancé la mission
-  const [isStarted, setIsStarted] = useState(false);
+  // ✅ Import du contexte global du Journal
+  const { addMessage } = useContext(JournalContext);
 
-  // `valeur` stocke la réponse numérique saisie par le joueur
-  const [valeur, setValeur] = useState("");
-
-  // `message` contient le message de résultat (succès / erreur / indice)
-  const [message, setMessage] = useState("");
-
-  // `journal` contient le texte narratif affiché sur le "journal de bord"
-  const [journal, setJournal] = useState([
-    "🧩 ÉNIGME 2 — LA COURBE DES ANDES",
-    "“L'Histoire se remet en marche...”",
-  ]);
-
-  // Référence vers la vidéo (pour la contrôler depuis le code)
+  // Référence vers la balise vidéo (pour contrôler lecture/plein écran)
   const videoRef = useRef(null);
 
-  // Liste des personnages affichés à l’écran avec leurs images et durées de règne
+  // --- LISTE DES PERSONNAGES ---
   const personnages = [
     { nom: "Pierre le Grand", img: "/image/image_enigme2/pierre_le_grand.png", regne: 43 },
     { nom: "Catherine II", img: "/image/image_enigme2/catherine_ii.png", regne: 34 },
@@ -32,98 +24,93 @@ export default function Enigme2({ onComplete }) {
     { nom: "Gorbatchev", img: "/image/image_enigme2/gorbatchev.png", regne: 6 },
   ];
 
-  // --- 🎬 Fonction déclenchée par le clic "Commencer la mission" ---
-  const handleStart = () => {
-    // Active le mode "énigme lancée"
-    setIsStarted(true);
+  // --- 🎬 Lancement de la vidéo en plein écran ---
+  const handleStartVideo = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.play().catch((err) => console.warn("Lecture vidéo bloquée :", err));
 
-    // Lecture de la vidéo depuis sa référence
-    if (videoRef.current) {
-      videoRef.current.play().catch((err) => console.warn("Lecture vidéo bloquée :", err));
+      if (video.requestFullscreen) video.requestFullscreen();
+      else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+      else if (video.msRequestFullscreen) video.msRequestFullscreen();
+    }
+  };
+
+  // --- 🧩 Quand la vidéo se termine ---
+  const handleVideoEnd = () => {
+    // Quitte le plein écran si actif
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
     }
 
-    // Lecture de l’audio de narration
+    // Lecture de l’audio narratif
     const audio = new Audio("/audio/audio_enigme2/audio1.mp3");
     audio.play().catch((err) => console.warn("Lecture audio bloquée :", err));
 
-    // Ajout de texte narratif dans le journal de bord
+    // Met aussi à jour le journal local (affichage dans la page)
     setJournal((prev) => [
       ...prev,
-      '🎧 Voix : "Tu crois avoir réparé le Temps ? Ce que tu as réactivé, c’est l’Histoire..."',
-      "📺 La Tour Spasskaïa s'anime. Les visages des dirigeants défilent à toute vitesse.",
-      "🗒️ Journal : Observe les années de règne et effectue le calcul :",
-      "Additionne leurs règnes et divise par le nombre de 2 révolutions.",
+      'ARC : ',
+      'Tu crois avoir réparé le Temps ?',
+      'Ce que tu as réactivé, c’est l’Histoire...',
+      "Journal : Observe les années de règne et effectue le calcul :",
+      "Additionne les et divise par le nombre de 2 révolutions.",
     ]);
+
+    setVideoPlayed(true);
   };
 
-  // --- 🧮 Fonction de vérification de la réponse ---
+  // --- 🧮 Vérifie la réponse du joueur ---
   const verifier = () => {
-    const num = parseFloat(valeur); // convertit la valeur saisie en nombre
+    const num = parseFloat(valeur);
 
     if (num === 61) {
-      // ✅ Bonne réponse
-      setMessage("✅ Deuxième partie de la latitude : 61’ — bien joué !");
+      addMessage("📡 Donnée confirmée. Le fichier historique d’ARC est décrypté.");
+      addMessage("✅ Deuxième partie de la latitude : 61’ — bien joué !");
+
       setJournal((prev) => [
         ...prev,
-        "📡 Donnée confirmée. Le fichier historique d’ARC est débloqué.",
+        "📡 Donnée confirmée. Le fichier historique d’ARC est décrypté.",
+        "✅ Deuxième partie de la latitude : 61’",
       ]);
 
-      // Passe à l’énigme suivante après 2,5 secondes
       setTimeout(() => onComplete(), 2500);
     } else if (num === 60.5) {
-      // 💡 Réponse presque correcte
-      setMessage("💡 Indice : arrondis le résultat.");
-      setJournal((prev) => [
-        ...prev,
-        "🔍 Conseil : les coordonnées nécessitent une valeur entière.",
-      ]);
+      setJournal((prev) => [...prev, "💡 Indice : cette coordonée ne peut contenir qu'un nombre entier"]);
     } else {
-      // ❌ Mauvaise réponse
       setMessage("❌ Mauvaise réponse. ARC renforce sa vigilance...");
-      setJournal((prev) => [
-        ...prev,
-        "⚠️ Donnée incohérente. Vérifie ton calcul.",
-      ]);
     }
   };
 
-  // --- 🎨 Rendu de l’interface ---
+  // --- 🖼️ AFFICHAGE DU COMPOSANT ---
   return (
     <div className="enigme-container">
-      {/* Titre principal */}
-      <h2>🧩 ÉNIGME 2 — LA COURBE DES ANDES</h2>
+      <h2>LA COURBE DES ANDES</h2>
 
-      {/* --- Étape 1 : Bouton de lancement --- */}
-      {!isStarted && (
-        <div className="start-section">
-          <p>Une anomalie temporelle a été détectée...</p>
-          <button onClick={handleStart}>▶ Commencer la mission</button>
+      {/* 🎥 Étape 1 : Lecture de la vidéo plein écran */}
+      {!videoPlayed && (
+        <div className="video-intro-container">
+          <video
+            ref={videoRef}
+            src="/video/video_histoire.mp4"
+            onEnded={handleVideoEnd}
+            className="video-fullscreen"
+            onClick={handleStartVideo}
+          />
+          <p className="info-video">
+            🎬 Cliquez sur la vidéo pour lancer la séquence d'introduction.
+          </p>
         </div>
       )}
 
-      {/* --- Étape 2 : Vidéo + contenu interactif --- */}
-      {isStarted && (
+      {/* 🎮 Étape 2 : Contenu du jeu après la vidéo */}
+      {videoPlayed && (
         <>
-          {/* 🎥 Vidéo historique (muette au départ, contrôlable par le joueur) */}
-          <div className="video-section">
-            <video
-              ref={videoRef}
-              src="/video/video_histoire.mp4"
-              width="500"
-              controls
-            ></video>
-          </div>
-
-          {/* 🖼️ Portraits des dirigeants historiques */}
+          {/* Portraits historiques */}
           <div className="portrait-container">
             {personnages.map((perso, i) => (
               <div key={i} className="portrait-card">
-                <img
-                  src={perso.img}
-                  alt={perso.nom}
-                  className="portrait-image"
-                />
-                {/* Apparition du nombre d’années au survol */}
+                <img src={perso.img} alt={perso.nom} className="portrait-image" />
                 <div className="portrait-hover">
                   <p>{perso.regne} ans</p>
                 </div>
@@ -132,14 +119,14 @@ export default function Enigme2({ onComplete }) {
             ))}
           </div>
 
-          {/* 📜 Journal de bord dynamique */}
+          {/* Journal local (optionnel) */}
           <div className="journal">
             {journal.map((line, index) => (
               <p key={index}>{line}</p>
             ))}
           </div>
 
-          {/* 🧮 Zone de réponse */}
+          {/* Zone de réponse */}
           <div className="reponse-zone">
             <p>Entre le résultat de ton calcul :</p>
             <input

@@ -1,0 +1,134 @@
+/* === 🧠 FENÊTRE DU JOURNAL DE BORD - STYLE TERMINAL FUTURISTE === */
+.journal-bord {
+  position: fixed; /* ✅ reste toujours visible à l’écran */
+  bottom: 20px; /* ancré en bas */
+  left: 20px; /* ✅ position à gauche */
+  width: 340px; /* format “chat Discord” */
+  height: 260px;
+  background: rgba(0, 15, 25, 0.88); /* fond sombre futuriste */
+  border: 2px solid #00ffff; /* contour lumineux cyan */
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999; /* reste au-dessus de tout */
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); /* halo autour du cadre */
+  backdrop-filter: blur(6px); /* effet verre holographique */
+  pointer-events: auto; /* ✅ permet de cliquer à l’intérieur */
+  animation: fadeInTerminal 0.8s ease-in-out;
+}
+
+/* === EN-TÊTE DU JOURNAL === */
+.journal-header {
+  background: rgba(0, 255, 255, 0.15);
+  text-align: center;
+  font-weight: bold;
+  padding: 8px 0;
+  color: #00ffff;
+  text-shadow: 0 0 8px #00ffff;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+/* === CONTENU SCROLLABLE === */
+.journal-content {
+  flex: 1;
+  overflow-y: auto; /* ✅ scroll interne */
+  padding: 10px;
+  display: flex;
+  flex-direction: column; /* ✅ les messages se placent naturellement du haut vers le bas */
+  gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #00ffff rgba(255, 255, 255, 0.1);
+  scroll-behavior: smooth; /* ✅ défilement automatique fluide */
+}
+
+/* ✅ Scrollbar personnalisée (Chrome / Edge) */
+.journal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.journal-content::-webkit-scrollbar-thumb {
+  background-color: #00ffff;
+  border-radius: 10px;
+}
+.journal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* === MESSAGES INDIVIDUELS === */
+.journal-message {
+  background: rgba(0, 255, 255, 0.08);
+  border-left: 2px solid #00ffff;
+  padding: 6px 10px;
+  color: #b8faff;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  line-height: 1.3;
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
+  animation: fadeInMessage 0.4s ease;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+  transition: background 0.2s;
+}
+.journal-message:hover {
+  background: rgba(0, 255, 255, 0.18);
+}
+
+/* === ANIMATION APPARITION MESSAGE === */
+@keyframes fadeInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === ANIMATION D'APPARITION DU TERMINAL === */
+@keyframes fadeInTerminal {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* === ✅ Bouton de réduction === */
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #00ffff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  float: right;
+  margin-right: 10px;
+  transition: transform 0.2s ease;
+}
+
+.toggle-btn:hover {
+  transform: scale(1.2);
+  color: #fff;
+}
+
+/* === ✅ Mode réduit === */
+.journal-bord.reduit {
+  height: 45px; /* ne montre que l'en-tête */
+  width: 260px; /* plus compact */
+  overflow: hidden;
+  transition: all 0.4s ease;
+  opacity: 0.85;
+}
+
+/* animation fluide d’ouverture / fermeture */
+.journal-bord {
+  transition: height 0.4s ease, width 0.4s ease, opacity 0.3s ease;
+}
+

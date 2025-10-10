@@ -1,147 +1,126 @@
-import React, { useState, useEffect } from "react"; // Importation des fonctions et hooks nécessaires de React
-
+import React, { useState, useEffect, useContext } from "react"; // Importation de React, des hooks et du contexte
+import { JournalContext } from "../../context/JournalContext"; // Import du contexte global du Journal
 import PuzzleImage from "../PuzzleImage"; // Import du composant enfant PuzzleImage (le puzzle à reconstituer)
 
-
 export default function Enigme1({ onComplete }) {
+  // --- CONTEXTE GLOBAL ---
+  const { addMessage } = useContext(JournalContext); // Permet d’ajouter un message dans le Journal global
 
   // --- ÉTATS (useState) ---
+  const [isPuzzleDone, setPuzzleDone] = useState(false); // Indique si le puzzle est terminé
+  const [valeur, setValeur] = useState(""); // Stocke la valeur saisie
+  const [message, setMessage] = useState(""); // Message de validation
+  const [journal, setJournal] = useState([]); // Journal local de l’énigme
 
-  // Indique si le puzzle est terminé ou non (false au départ)
-  const [isPuzzleDone, setPuzzleDone] = useState(false);
+  const [audio, setAudio] = useState(null); // Stocke le son du succès
 
-  // Stocke la valeur saisie par le joueur pour la réponse finale (le chiffre)
-  const [valeur, setValeur] = useState("");
-
-  // Message de retour pour le joueur (succès / erreur)
-  const [message, setMessage] = useState("");
-
-  // Journal de bord (liste de messages narratifs affichés à l’écran)
-  const [journal, setJournal] = useState([
-    "🧩 ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA",
-    "(Kremlin, Moscou – Première clé de la latitude)",
-  ]);
-
-  // Prépare une variable d’état pour stocker un objet audio (pour le son de succès)
-  const [audio, setAudio] = useState(null);
-
-  // --- EFFET SECONDAIRE : useEffect ---
-  // S’exécute une fois au montage du composant
+  // --- 🔊 Prépare l’audio ---
   useEffect(() => {
-    // Crée un nouvel objet audio en mémoire à partir du fichier présent dans /public
     const sound = new Audio("/audio/audio_enigme1/audio_puzzle_resolu.mp3");
-    // Définit le volume à 100%
     sound.volume = 1;
-    // Stocke cet objet audio dans l’état local `audio`
     setAudio(sound);
-  }, []); // [] = exécuter une seule fois à l’initialisation
+  }, []);
 
-  // --- FONCTION : quand le puzzle est résolu ---
+  // --- 🧩 Quand le puzzle est résolu ---
   const handlePuzzleResolved = () => {
-    // Vérifie que le puzzle n’a pas déjà été marqué comme terminé
     if (!isPuzzleDone) {
-      // Met à jour l’état pour indiquer que le puzzle est fini
       setPuzzleDone(true);
 
-      // Comme Chrome bloque parfois l’audio automatique, on prépare un “déblocage”
-      // L’audio sera lu dès que l’utilisateur clique sur la page
+      // Lecture audio à la première interaction
       const playAudio = () => {
         if (audio) {
           audio.play().catch((err) =>
             console.warn("Lecture audio bloquée :", err)
           );
         }
-        // Une fois l’audio joué, on retire le listener pour éviter les répétitions
         window.removeEventListener("click", playAudio);
       };
-      // On écoute le premier clic utilisateur pour déclencher le son
       window.addEventListener("click", playAudio);
 
-      // Ajoute de nouvelles lignes dans le journal de bord (messages narratifs)
+
+      // Ajoute aussi dans le journal local
       setJournal((prev) => [
         ...prev,
-        '🎧 ARC : "La Tour du Temps détient la Clé du Pouvoir. Ma clé bat selon un cycle que tu ne comprendras jamais."',
-        "🗒️ Journal : Convertis-la en minutes et brise-la avec La Clef. Notre agent de liaison a constaté que le cycle dure 10h57.",
+        'ARC : ',
+        "La Tour du Temps détient la Clé du Pouvoir. Ma clé bat selon un cycle que tu ne comprendras jamais.",
+        "Journal : Convertis-la en minutes et brise-la avec La Clef. Notre agent de liaison a constaté que le cycle dure 10h57.",
       ]);
     }
   };
 
-  // --- FONCTION : vérifie la réponse saisie par le joueur ---
+  // --- 🧮 Vérifie la réponse du joueur ---
   const verifier = () => {
-    // Convertit la valeur saisie en nombre entier et vérifie si elle est correcte (73)
     if (parseInt(valeur) === 73) {
-      // Affiche un message de succès
-      setMessage("✅ Première partie de la latitude récupérée : 73° !");
-      // Ajoute des entrées dans le journal de bord
-      setJournal((prev) => [
-        ...prev,
-        "📡 Donnée confirmée. Alpha ROOT a débloqué le premier verrou du système ARC.",
-      ]);
+      addMessage("📡 Donnée confirmée. Alpha ROOT a débloqué le premier verrou du système ARC.");
+      addMessage("✅ Première partie de la latitude récupérée : 73° !");
+      //setMessage("✅ Première partie de la latitude récupérée : 73° !");
+      //setJournal((prev) => [
+      //  ...prev,
+      //  "📡 Donnée confirmée. Alpha ROOT a débloqué le premier verrou du système ARC.",
+      //]);
 
-      // Lecture du son de réussite si disponible
+      // Lecture du son de réussite
       if (audio) {
         audio.play().catch((err) =>
           console.warn("Lecture audio bloquée :", err)
         );
       }
 
-      // Après un court délai (3 secondes), on passe automatiquement à l’énigme suivante
-      setTimeout(() => onComplete(), 1000);
+      // Transition vers l’énigme suivante
+      setTimeout(() => onComplete(), 3000);
     } else {
-      // Si la valeur est incorrecte, affiche un message d’erreur
-      setMessage("❌ Mauvaise réponse, la détection d’ARC augmente de 5%...");
-      // Ajoute un avertissement dans le journal
-      setJournal((prev) => [
-        ...prev,
+      setMessage([
+        "❌ Mauvaise réponse, la détection d’ARC augmente de 5%...",
+        <br />,
         "⚠️ Anomalie détectée... chaque erreur attire l’attention d’ARC !",
-      ]);
+    ]);
     }
   };
 
-  // --- RENDU JSX (affichage à l’écran) ---
+  // --- 🎨 AFFICHAGE ---
   return (
     <div className="enigme-container">
-      {/* Titre principal de l’énigme */}
-      <h2>🧩 ÉNIGME 1 — LE SCEAU DE LA SPASSKAÏA</h2>
+      {/* Titre principal */}
+      <h2>LE SCEAU DE LA SPASSKAÏA</h2>
 
-      {/* Texte d’introduction, change selon que le puzzle est fini ou non */}
+      {/* Message introductif */}
       <p>
         {isPuzzleDone
           ? "Puzzle complété — observe la Tour Spasskaïa et poursuis ta mission."
           : "Reconstitue le puzzle pour révéler la Tour Spasskaïa."}
       </p>
 
-      {/* ✅ Affiche le puzzle uniquement tant qu’il n’est pas terminé */}
+      {/* Puzzle affiché tant qu’il n’est pas fini */}
       {!isPuzzleDone && (
         <PuzzleImage
-          imageSrc="/image/image_enigme1/image_tour.png" // chemin vers l’image
-          onResolve={handlePuzzleResolved} // fonction à appeler quand le puzzle est fini
+          imageSrc="/image/image_enigme1/image_tour.png"
+          onResolve={handlePuzzleResolved}
         />
       )}
 
-      {/* ✅ Si le puzzle est terminé, on affiche le reste de l’interface */}
+      {/* Interface une fois le puzzle fini */}
       {isPuzzleDone && (
         <>
-          {/* Journal de bord : affichage dynamique de chaque ligne */}
+          {/* Journal local de l’énigme */}
           <div className="journal">
             {journal.map((line, index) => (
-              <p key={index}>{line}</p> // chaque entrée du journal est affichée séparément
+              <p key={index}>{line}</p>
             ))}
           </div>
 
-          {/* Champ de saisie de la réponse */}
+          {/* Champ de saisie */}
           <p>Entre le chiffre correct :</p>
           <input
-            type="number" // champ numérique
-            value={valeur} // lié à la variable d’état
-            onChange={(e) => setValeur(e.target.value)} // met à jour la valeur à chaque frappe
-            placeholder="Entre la valeur..." // texte d’aide
+            type="number"
+            value={valeur}
+            onChange={(e) => setValeur(e.target.value)}
+            placeholder="Entre la valeur..."
           />
 
-          {/* Bouton pour valider la réponse */}
+          {/* Bouton de validation */}
           <button onClick={verifier}>Valider</button>
 
-          {/* Message de résultat (succès ou erreur) */}
+          {/* Message d’état */}
           <p className="message">{message}</p>
         </>
       )}
